@@ -1,0 +1,16 @@
+{
+  "name": "weapon-ball-server",
+  "version": "1.0.0",
+  "description": "TikTok Live Connector backend for Weapon Ball",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "cors": "*",
+    "express": "*",
+    "socket.io": "*",
+    "tiktok-live-connector": "*"
+  }
+}

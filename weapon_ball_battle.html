@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔮 Weapon Ball BATTLE ROYALE - Earclacks Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:    #0d1117;
+    --bg-card:    #161b22;
+    --bg-card2:   #21262d;
+    --primary:    #00d9ff;
+    --primary-dim:#0099cc;
+    --secondary:  #ff6b9d;
+    --accent:     #c084fc;
+    --red:        #ff4757;
+    --blue:       #3742fa;
+    --green:      #2ed573;
+    --purple:     #a55eea;
+    --text:       #e6edf3;
+    --text-muted: #8b949e;
+    --border:     rgba(0,217,255,0.15);
+    --radius:     16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'Crimson Pro', serif;
+    font-size: 17px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Animated Background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 80%, rgba(0,217,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(255,107,157,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(192,132,252,0.03) 0%, transparent 60%);
+    z-index: 0;
+  }
+
+  .layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding: 2rem 1.2rem;
+    border-right: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(13,17,23,0.98) 0%, rgba(22,27,34,0.95) 100%);
+    backdrop-filter: blur(12px);
+  }
+
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.08em;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  nav a {
+    display: block;
+    font-size: 14px;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 8px 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    transition: 0.25s;
+  }
+
+  nav a:hover, nav a.active {
+    color: var(--primary);
+    background: rgba(0,217,255,0.08);
+    padding-left: 16px;
+  }
+
+  .main { flex: 1; padding: 3.5rem; max-width: 1100px; }
+
+  .hero { 
+    text-align: center; 
+    margin-bottom: 4rem;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(0,217,255,0.08) 0%, rgba(255,107,157,0.08) 100%);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.8rem;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+  .section-num {
+    background: var(--primary);
+    color: var(--bg-deep);
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .weapon-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: 0.3s;
+  }
+  .weapon-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,217,255,0.15);
+  }
+  .weapon-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  .weapon-name { color: var(--primary); font-weight: 600; }
+
+  .mode-card {
+    background: linear-gradient(135deg, rgba(0,217,255,0.05) 0%, rgba(255,107,157,0.05) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: 0.3s;
+  }
+  .mode-card:hover {
+    border-color: var(--primary);
+    transform: translateX(5px);
+  }
+  .mode-card h3 { color: var(--primary); margin-bottom: 0.5rem; }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+  }
+  .data-table th {
+    background: var(--bg-card2);
+    color: var(--primary);
+    text-align: left;
+    padding: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+  }
+  .data-table td { padding: 12px; border-bottom: 1px solid var(--border); }
+  .data-table tr:hover td { background: rgba(0,217,255,0.05); }
+
+  .highlight { color: var(--primary); font-weight: 600; }
+  .highlight-blue { color: #5ab4ff; font-weight: 600; }
+  .highlight-red { color: #ff6b7a; font-weight: 600; }
+  .highlight-green { color: #5ae09f; font-weight: 600; }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-row:last-child { border-bottom: none; }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .video-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: 0.3s;
+  }
+  .video-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+  }
+
+  .gift-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  .gift-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--bg-card2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+  }
+  .gift-item:hover {
+    border-color: var(--primary);
+    transform: translateX(5px);
+  }
+  .gift-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,217,255,0.1);
+    border-radius: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { padding: 2rem; }
+    .hero h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="nav-logo">🔮 WEAPON BALL</div>
+    <nav>
+      <a href="#overview">01. Tổng quan</a>
+      <a href="#weapons">02. Vũ khí & Ball</a>
+      <a href="#modes">03. Chế độ chơi</a>
+      <a href="#super">04. Super Ball</a>
+      <a href="#gallery">05. Hình ảnh</a>
+      <a href="#gifts">06. Quy đổi quà</a>
+      <a href="#mechanics">07. Cơ chế game</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <h1>⚔️ WEAPON BALL BATTLE ROYALE</h1>
+      <p class="subtitle">Game đấu bóng vũ khí phiêu lưu từ Earclacks</p>
+    </div>
+
+    <section id="overview">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2>Tổng Quan</h2>
+      </div>
+      <div class="card">
+        <p><strong>Weapon Ball Battles</strong> là series game nổi tiếng của <span class="highlight">Earclacks</span> trên TikTok. Mỗi trận đấu có 2 Weapon Balls với <span class="highlight-red">100 HP</span> được đặt trong sân đấu hình vuông. Chúng phải đánh bại nhau để chiến thắng.</p>
+        <br>
+        <p>Các Weapon Balls mang vũ khí xoay quanh và gây sát thương bằng <span class="highlight-blue">tiếp xúc</span>, <span class="highlight-green">bắn đạn</span>, hoặc các cách khác.</p>
+      </div>
+    </section>
+
+    <section id="weapons">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2>Hệ Thống Vũ Khí (23 Loại)</h2>
+      </div>
+      <div class="card-grid">
+        <div class="weapon-card"><div class="weapon-icon">⚔️</div><div class="weapon-name">Sword</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🗡️</div><div class="weapon-name">Dagger</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🔱</div><div class="weapon-name">Spear</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🏹</div><div class="weapon-name">Bow</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🌾</div><div class="weapon-name">Scythe</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🛡️</div><div class="weapon-name">Shield</div></div>
+        <div class="weapon-card"><div class="weapon-icon">👊</div><div class="weapon-name">Unarmed</div></div>
+        <div class="weapon-card"><div class="weapon-icon">⚜️</div><div class="weapon-name">Scepter</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🧹</div><div class="weapon-name">Staff</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🥷</div><div class="weapon-name">Shuriken</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🔧</div><div class="weapon-name">Wrench</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🔨</div><div class="weapon-name">Hammer</div></div>
+        <div class="weapon-card"><div class="weapon-icon">⛩️</div><div class="weapon-name">Katana</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🍾</div><div class="weapon-name">Flask</div></div>
+        <div class="weapon-card"><div class="weapon-icon">📖</div><div class="weapon-name">Grimoire</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🍢</div><div class="weapon-name">Lance</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🪓</div><div class="weapon-name">Axe</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🪃</div><div class="weapon-name">Boomerang</div></div>
+        <div class="weapon-card"><div class="weapon-icon">⛓️</div><div class="weapon-name">Flail</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🎯</div><div class="weapon-name">Crossbow</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🔥</div><div class="weapon-name">Torch</div></div>
+        <div class="weapon-card"><div class="weapon-icon">🤺</div><div class="weapon-name">Rapier</div></div>
+        <div class="weapon-card"><div class="weapon-icon">📜</div><div class="weapon-name">Scroll</div></div>
+      </div>
+    </section>
+
+    <section id="modes">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2>Chế Độ Chơi</h2>
+      </div>
+      
+      <div class="mode-card">
+        <h3>🎯 1v1 (Standard)</h3>
+        <p>2 Weapon Balls đấu trực tiếp, mỗi bên 100 HP. Đây là chế độ cơ bản nhất.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>👑 Battle Royale</h3>
+        <p>4-8 Weapon Balls trong sân lớn. <span class="highlight-green">Anti-gravity</span> được bật. Arena thu nhỏ dần khi có nhiều balls bị đánh bại. <span class="highlight">HP Packs</span> xuất hiện ngẫu nhiên. Ball sống sót cuối cùng thắng!</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>👥 Teamfight</h3>
+        <p>2 đội, mỗi đội 4 balls. Đội đầu tiên tiêu diệt hết đội đối phương thắng.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>🐉 Giga Ball Boss Raid</h3>
+        <p>6-8 balls (mỗi ball 500 HP) chiến đấu với 1 Giga Ball khổng lồ (gấp 5-6 lần, <span class="highlight-red">10,000 HP</span>). Tất cả balls nhỏ là một đội.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>🏐 Dodgeball</h3>
+        <p>2 balls (500 HP mỗi bên) đứng 2 phía sân, đánh một "bóng vô hình" (Unarmed) qua lại để gây sát thương.</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>⏱️ Time Trials</h3>
+        <p>1 Ball có 60 giây để đánh bại một quả bóng trắng khổng lồ (1000 HP).</p>
+      </div>
+
+      <div class="mode-card">
+        <h3>💪 1v100</h3>
+        <p>1 Ball (250-500 HP) đấu với 100 balls đối phương trong sân đấu khổng lồ.</p>
+      </div>
+    </section>
+
+    <section id="super">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2>Super Ball</h2>
+      </div>
+      <div class="card">
+        <p>Super Balls là phiên bản nâng cấp với <span class="highlight-red">500 HP</span>, buff chỉ số và đôi khi có khả năng mới. Nhận biết bằng vòng tròn nhỏ màu trắng bên trong.</p>
+        <br>
+        <table class="data-table">
+          <thead>
+            <tr><th>Vũ khí</th><th>Super Form</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Sword ⚔️</td><td class="highlight">Super Sword</td></tr>
+            <tr><td>Flask 🍾</td><td class="highlight">Super Flask</td></tr>
+            <tr><td>Bow 🏹</td><td class="highlight">Super Bow</td></tr>
+            <tr><td>Scythe 🌾</td><td class="highlight">Super Scythe</td></tr>
+            <tr><td>Unarmed 👊</td><td class="highlight">Super Unarmed</td></tr>
+            <tr><td>Dagger 🗡️</td><td class="highlight">Super Dagger</td></tr>
+            <tr><td>Katana ⛩️</td><td class="highlight">Super Katana</td></tr>
+            <tr><td>Staff 🧹</td><td class="highlight">Super Staff</td></tr>
+            <tr><td>Wrench 🔧</td><td class="highlight">Super Wrench</td></tr>
+            <tr><td>Shuriken 🥷</td><td class="highlight">Super Shuriken</td></tr>
+            <tr><td>Lance 🍢</td><td class="highlight">Super Lance</td></tr>
+            <tr><td>Hammer 🔨</td><td class="highlight">Super Hammer</td></tr>
+            <tr><td>Boomerang 🪃</td><td class="highlight">Super Boomerang</td></tr>
+            <tr><td>Spear 🔱</td><td class="highlight">Super Spear</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="gallery">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2>Hình Ảnh Gameplay</h2>
+      </div>
+      <div class="card">
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Khám phá gameplay đỉnh cao của Weapon Ball Battles qua các video TikTok:</p>
+        <div class="video-grid">
+          <div class="video-card">
+            <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@earclacks/video/7527833966250839309" data-video-id="7527833966250839309" style="max-width: 605px;min-width: 325px;" > <section> <a target="_blank" title="@earclacks" href="https://www.tiktok.com/@earclacks?refer=embed">@earclacks</a> Weapon Ball BATTLE ROYALE <a title="satisfying" target="_blank" href="https://www.tiktok.com/tag/satisfying?refer=embed">#satisfying</a> <a title="simulation" target="_blank" href="https://www.tiktok.com/tag/simulation?refer=embed">#simulation</a> <a title="physics" target="_blank" href="https://www.tiktok.com/tag/physics?refer=embed">#physics</a> <a title="fantasy" target="_blank" href="https://www.tiktok.com/tag/fantasy?refer=embed">#fantasy</a> <a title="rpg" target="_blank" href="https://www.tiktok.com/tag/rpg?refer=embed">#rpg</a> <a title="battleroyale" target="_blank" href="https://www.tiktok.com/tag/battleroyale?refer=embed">#battleroyale</a> <a target="_blank" title="♬ original sound - Earclacks" href="https://www.tiktok.com/music/original-sound-Earclacks-7527834140738161422?refer=embed">♬ original sound - Earclacks</a> </section> </blockquote>
+          </div>
+          <div class="video-card">
+            <div style="background: var(--bg-card2); border-radius: 12px; padding: 2rem; text-align: center;">
+              <div style="font-size: 4rem; margin-bottom: 1rem;">🎮</div>
+              <h4 style="color: var(--primary); margin-bottom: 0.5rem;">Earclacks Official</h4>
+              <p style="color: var(--text-muted); font-size: 14px;">Truy cập <a href="https://www.earclacks.com/" target="_blank" style="color: var(--primary);">earclacks.com</a> để chơi thử game!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gifts">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2>Quy Đổi Quà Tặng</h2>
+      </div>
+      <div class="card">
+        <p style="margin-bottom: 1.5rem;">Dưới đây là hệ thống quy đổi từ TikTok Gifts sang in-game benefits:</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Gift</th>
+              <th>Xu</th>
+              <th>In-Game Benefit</th>
+              <th>Visual Effect</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>❤️ Heart</td><td>1</td><td>Triệu hồi 1 lính 1⭐</td><td>Tim bay xuống sân</td></tr>
+            <tr><td>🌹 Rose</td><td>5</td><td>Triệu hồi 2 lính 1⭐</td><td>Hoa hồng rơi + lấp lánh</td></tr>
+            <tr><td>💎 Diamond</td><td>15</td><td>Triệu hồi 3 lính 2⭐</td><td>Kim cương tỏa sáng</td></tr>
+            <tr><td>🐇 Rabbit</td><td>30</td><td>Triệu hồi 4 lính 2⭐</td><td>Thỏ nhảy xuống sân</td></tr>
+            <tr><td>🎵 Music</td><td>50</td><td>Triệu hồi 5 lính 2⭐</td><td>Nốt nhạc bay</td></tr>
+            <tr><td>🚀 Rocket</td><td>100</td><td>Triệu hồi 6 lính 3⭐</td><td>Tên lửa bay qua</td></tr>
+            <tr><td>🏆 Crown</td><td>200</td><td>Triệu hồi 8 lính 3⭐</td><td>Vương miện tỏa ánh vàng</td></tr>
+            <tr><td>💋 Lips</td><td>25</td><td>Hồi máu 20%</td><td>Nụ hôn bay</td></tr>
+            <tr><td>⭐ Star</td><td>35</td><td>Tăng tốc đánh 10%</td><td>Sao lấp lánh</td></tr>
+            <tr><td>🦅 Eagle</td><td>150</td><td>Triệu hồi 7 lính 3⭐</td><td>Đại bàng bay</td></tr>
+            <tr><td>🎁 Gift Box</td><td>45</td><td>Random buff ngẫu nhiên</td><td>Hộp quà mở</td></tr>
+            <tr><td>🌈 Rainbow</td><td>80</td><td>Hiệu ứng cầu vồng</td><td>Cầu vồng xuất hiện</td></tr>
+            <tr><td>🦋 Butterfly</td><td>60</td><td>Triệu hồi 5 lính 3⭐</td><td>Bướm bay</td></tr>
+            <tr><td>💪 Biceps</td><td>40</td><td>Buff sát thương 15%</td><td>Cơ bắp flex</td></tr>
+            <tr><td>🔮 Crystal Ball</td><td>120</td><td>Triệu hồi tướng 4⭐</td><td>Crystal bay</td></tr>
+            <tr><td>👑 King</td><td>300</td><td>Triệu hồi Super Ball 5⭐</td><td>Vua xuất hiện</td></tr>
+            <tr><td>🐉 Dragon</td><td>500</td><td>Triệu hồi Boss Ball</td><td>Rồng bay</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="card">
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">💬 Comment Effects</h3>
+        <div class="gift-grid">
+          <div class="gift-item"><span class="gift-icon">1</span><span>Gia nhập phe Xanh</span></div>
+          <div class="gift-item"><span class="gift-icon">2</span><span>Gia nhập phe Đỏ</span></div>
+          <div class="gift-item"><span class="gift-icon">⚡</span><span>Buff cho team</span></div>
+          <div class="gift-item"><span class="gift-icon">❓</span><span>Hiện hướng dẫn</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">🎯 Special Combos</h3>
+        <table class="data-table">
+          <thead>
+            <tr><th>Combo</th><th>Yêu Cầu</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>✈️ Máy Bay</td><td>4x Rocket (400xu)</td><td>Triệu hồi Weapon Ball 5⭐ + Anti-gravity</td></tr>
+            <tr><td>💕 Cặp đôi</td><td>2x Lips (50xu)</td><td>Kết hợp 2 balls thành 1</td></tr>
+            <tr><td>🌪️ Bão tố</td><td>5x Rocket (500xu)</td><td>Arena thu nhỏ gấp đôi</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="mechanics">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <h2>Cơ Chế Game</h2>
+      </div>
+      <div class="card">
+        <div class="stat-row">
+          <span>HP Mặc định (1v1)</span>
+          <span class="highlight-red">100 HP</span>
+        </div>
+        <div class="stat-row">
+          <span>HP Battle Royale</span>
+          <span class="highlight-red">500 HP</span>
+        </div>
+        <div class="stat-row">
+          <span>HP Extended Fight</span>
+          <span class="highlight-red">250 HP</span>
+        </div>
+        <div class="stat-row">
+          <span>HP Giga Ball Boss</span>
+          <span class="highlight-red">10,000 HP</span>
+        </div>
+        <div class="stat-row">
+          <span>Anti-Gravity</span>
+          <span class="highlight-green">✔️ Enabled</span>
+        </div>
+        <div class="stat-row">
+          <span>Arena Shrink</span>
+          <span class="highlight-green">✔️ Enabled</span>
+        </div>
+        <div class="stat-row">
+          <span>Health Packs</span>
+          <span class="highlight-green">✔️ Spawn</span>
+        </div>
+      </div>
+    </section>
+
+    <footer style="margin-top: 4rem; text-align: center; color: var(--text-muted); font-size: 13px;">
+      <p>© 2026 Weapon Ball Battles | Thiết kế theo phong cách Earclacks</p>
+    </footer>
+  </main>
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    let current = '';
+    const sections = document.querySelectorAll('section');
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      if (pageYOffset >= sectionTop - 100) {
+        current = section.getAttribute('id');
+      }
+    });
+    document.querySelectorAll('nav a').forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href').includes(current)) {
+        a.classList.add('active');
+      }
+    });
+  });
+</script>
+<script async src="https://www.tiktok.com/embed.js"></script>
+
+</body>
+</html>
