@@ -85,7 +85,7 @@ export class MainScene extends Phaser.Scene {
             obsGraphics.strokeRect(pos.x - obsWidth/2, pos.y - obsHeight/2, obsWidth, obsHeight);
             
             // Tạo body tĩnh (static)
-            const obsBody = this.matter.add.rectangle(pos.x, pos.y, obsWidth, obsHeight, { 
+            this.matter.add.rectangle(pos.x, pos.y, obsWidth, obsHeight, { 
                 isStatic: true,
                 restitution: 1.1, // Nảy mạnh
                 friction: 0,
