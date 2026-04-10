@@ -45,10 +45,13 @@
       .btn-green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: #000; }
       .btn-red { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); }
       .btn-orange { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000;}
+      .btn-blue { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
       
       h2 { margin-top: 0; color: #4a5568; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 12px; font-size: 20px;}
       .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
       .status { font-weight: 600; margin-top: 15px; font-size: 14px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.5); }
+      .player-list { list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto; }
+      .player-item { padding: 8px; border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 14px; }
     </style>
   </head>
   <body>
@@ -78,7 +81,16 @@
         <button id="btnHeal" class="btn-green">💋 Mưa Nụ Hôn (+HP)</button>
         <button id="btnSpeed" class="btn-orange">⭐ Buff Sao Băng (Tốc quay)</button>
         <button id="btnDamage" class="btn-red">💪 Buff Cơ Bắp (+Sát thương)</button>
+        <button id="btnShield" class="btn-blue">🛡️ Buff Khiên (Bảo vệ)</button>
+        <button id="btnBurn" class="btn-red">🔥 Lửa Địa Ngục (Thiêu đốt)</button>
       </div>
+    </div>
+
+    <div class="panel">
+      <h2>📋 Danh Sách Người Chơi (Live)</h2>
+      <ul id="playerList" class="player-list">
+        <li class="player-item"><i>Chưa có chiến binh nào...</i></li>
+      </ul>
     </div>
 
     <script type="module" src="/src/admin.ts"></script>

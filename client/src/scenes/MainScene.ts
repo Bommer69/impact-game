@@ -8,6 +8,10 @@ interface FighterData {
     maxHp: number;
     username: string;
     score: number; // Chỉ số cống hiến Leaderboard
+    isShielded?: boolean;
+    shieldGraphic?: Phaser.GameObjects.Graphics;
+    isBurning?: boolean;
+    fireEmitter?: Phaser.GameObjects.Particles.ParticleEmitter;
 }
 
 export class MainScene extends Phaser.Scene {
@@ -16,16 +20,24 @@ export class MainScene extends Phaser.Scene {
     private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
     private leaderboardText!: Phaser.GameObjects.Text;
     private weaponsList = ['wp_sword', 'wp_spear', 'wp_axe', 'wp_bow'];
+    
+    // Web Audio API Context
+    private audioCtx?: AudioContext;
 
     constructor() {
         super('MainScene');
+        try {
+            this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        } catch (e) {
+            console.warn("Web Audio API không được hỗ trợ");
+        }
     }
 
     create() {
         console.log('Khởi tạo đấu trường Neon Arena...');
         const { width, height } = this.scale;
         
-        // --- ĐỒ HỌA GRID BACKGROUND (TRON CYBERPUNK) ---
+        // --- ĐỒ HỌA GRID BACKGROUND VÀ BỨC TƯỜNG (TRON CYBERPUNK) ---
         const gridGraphics = this.add.graphics();
         gridGraphics.lineStyle(1, 0x1f2937, 0.4);
         for(let x = 0; x < width; x += 50) {
@@ -36,13 +48,54 @@ export class MainScene extends Phaser.Scene {
         }
         gridGraphics.strokePath();
 
-        // Tường có độ nảy hoàn hảo
-        this.matter.world.setBounds(0, 0, width, height, 50, true, true, true, true);
+        // Vẽ 4 bức tường xung quanh đấu trường để tăng cảm giác "không gian hẹp, map rộng"
+        const wallThickness = 20;
+        const wallGlow = this.add.graphics();
+        wallGlow.lineStyle(wallThickness, 0x00f2fe, 0.8);
+        wallGlow.strokeRect(wallThickness/2, wallThickness/2, width - wallThickness, height - wallThickness);
+        wallGlow.lineStyle(4, 0xffffff, 1);
+        wallGlow.strokeRect(wallThickness/2, wallThickness/2, width - wallThickness, height - wallThickness);
+
+        // Tường vật lý đồng bộ với hiển thị
+        this.matter.world.setBounds(wallThickness, wallThickness, width - wallThickness*2, height - wallThickness*2, 50, true, true, true, true);
 
         // Chữ chìm trang trí Neon
         this.add.text(width / 2, height / 2, 'WEAPON BALL\nARENA', {
             fontSize: '72px', color: '#0d1117', fontStyle: '900', align: 'center', stroke: '#2d3748', strokeThickness: 2
         }).setOrigin(0.5).setAlpha(0.6);
+
+        // --- CÁC BỨC TƯỜNG/CHƯỚNG NGẠI VẬT TRONG MAP ---
+        const obstaclePositions = [
+            { x: width * 0.3, y: height * 0.3 },
+            { x: width * 0.7, y: height * 0.3 },
+            { x: width * 0.3, y: height * 0.7 },
+            { x: width * 0.7, y: height * 0.7 }
+        ];
+
+        const obsGraphics = this.add.graphics();
+        obsGraphics.lineStyle(6, 0xff007f, 1);
+        obsGraphics.fillStyle(0x110022, 0.8);
+
+        obstaclePositions.forEach(pos => {
+            const obsWidth = 120;
+            const obsHeight = 40;
+            
+            // Vẽ hộp neon
+            obsGraphics.fillRect(pos.x - obsWidth/2, pos.y - obsHeight/2, obsWidth, obsHeight);
+            obsGraphics.strokeRect(pos.x - obsWidth/2, pos.y - obsHeight/2, obsWidth, obsHeight);
+            
+            // Tạo body tĩnh (static)
+            const obsBody = this.matter.add.rectangle(pos.x, pos.y, obsWidth, obsHeight, { 
+                isStatic: true,
+                restitution: 1.1, // Nảy mạnh
+                friction: 0,
+                frictionStatic: 0
+            });
+            // (Tuỳ chọn) Bạn có thể lưu lại vào danh sách obstacles nếu cần xử lý va chạm đặc biệt
+        });
+
+        // Khởi động Background Drone Music
+        this.startBackgroundMusic();
 
         // --- BẢNG XẾP HẠNG (LEADERBOARD) TÙY BIẾN ---
         const boardBg = this.add.graphics();
@@ -77,6 +130,11 @@ export class MainScene extends Phaser.Scene {
                 const fighterA = this.fighters.find(f => (f.body.body as MatterJS.BodyType).id === bodyA.id);
                 const fighterB = this.fighters.find(f => (f.body.body as MatterJS.BodyType).id === bodyB.id);
 
+                // Nếu chạm vào tường (wall bounces)
+                if ((fighterA && !fighterB) || (!fighterA && fighterB)) {
+                    this.playSynthSound('bounce');
+                }
+
                 if (fighterA && fighterB) {
                     const speedA = bodyA.speed || 0;
                     const speedB = bodyB.speed || 0;
@@ -86,27 +144,22 @@ export class MainScene extends Phaser.Scene {
 
                     // A nhanh hơn B -> A chém B
                     if (speedA > speedB + 2) {
-                        fighterB.hp -= 25;
-                        fighterA.score += 25; // Cộng 25 điểm cống hiến sát thương
-                        this.showDamageText(fighterB.body.x, fighterB.body.y, "-25", '#ff4757');
-                        this.flashColor(fighterB.body);
+                        this.applyDamage(fighterB, 25, fighterA);
+                        this.playSynthSound('hit');
                         this.sparks.emitParticleAt(clashX, clashY, 8); // Xẹt tia sáng
                     } 
                     // B nhanh hơn A -> B chém A
                     else if (speedB > speedA + 2) {
-                        fighterA.hp -= 25;
-                        fighterB.score += 25;
-                        this.showDamageText(fighterA.body.x, fighterA.body.y, "-25", '#ff4757');
-                        this.flashColor(fighterA.body);
+                        this.applyDamage(fighterA, 25, fighterB);
+                        this.playSynthSound('hit');
                         this.sparks.emitParticleAt(clashX, clashY, 8);
                     } 
                     // Tốc độ bằng nhau (Nảy bật Clash)
                     else {
-                        fighterA.hp -= 10;
-                        fighterB.hp -= 10;
-                        this.flashColor(fighterA.body);
-                        this.flashColor(fighterB.body);
+                        this.applyDamage(fighterA, 10, null);
+                        this.applyDamage(fighterB, 10, null);
                         this.showDamageText(fighterA.body.x, fighterA.body.y, "CLASH!", '#a55eea');
+                        this.playSynthSound('clash');
                         this.sparks.emitParticleAt(clashX, clashY, 15); // Nổ to tĩnh điện
                     }
                     
@@ -119,9 +172,33 @@ export class MainScene extends Phaser.Scene {
         });
 
         // Kết nối Socket
-        this.socket = io('http://localhost:3000');
-        this.socket.on('game-spawn', (data) => this.spawnBall(data));
+        const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+        this.socket = io(serverUrl);
+        this.socket.on('game-spawn', (data) => {
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume();
+            }
+            this.spawnBall(data);
+        });
         this.socket.on('game-buff', (data) => this.applyBuff(data));
+    }
+
+    private applyDamage(target: FighterData, dmg: number, attacker: FighterData | null) {
+        if (target.isShielded) {
+            this.showDamageText(target.body.x, target.body.y, "BLOCKED!", '#00f2fe');
+            // Mất khiên sau 1 đòn
+            target.isShielded = false;
+            if (target.shieldGraphic) target.shieldGraphic.destroy();
+            return;
+        }
+
+        target.hp -= dmg;
+        this.showDamageText(target.body.x, target.body.y, `-${dmg}`, '#ff4757');
+        this.flashColor(target.body);
+
+        if (attacker) {
+            attacker.score += dmg;
+        }
     }
 
     private forgeWeapons() {
@@ -190,18 +267,49 @@ export class MainScene extends Phaser.Scene {
                 target.hp = Math.min(target.maxHp + 50, target.hp + 50); 
                 this.showDamageText(px, py, "+50 HP HEAL", '#43e97b');
                 this.flashColor(target.body, 0x43e97b);
+                this.playSynthSound('heal');
             } 
             else if (data.buffType === 'speed') {
                 target.body.setAngularVelocity(0.5); // Tốc độ chóng mặt
                 target.body.applyForce(new Phaser.Math.Vector2(Phaser.Math.FloatBetween(-0.08, 0.08), Phaser.Math.FloatBetween(-0.08, 0.08)));
                 this.showDamageText(px, py, "SPEED UP!", '#f6d365');
                 this.flashColor(target.body, 0xf6d365);
+                this.playSynthSound('buff');
             }
             else if (data.buffType === 'damage') {
                 target.score += 50; // Tặng ngay điểm cống hiến
                 target.body.applyForce(new Phaser.Math.Vector2(Phaser.Math.FloatBetween(-0.1, 0.1), Phaser.Math.FloatBetween(-0.1, 0.1)));
                 this.showDamageText(px, py, "DAMAGE BOOST!", '#ff4757');
                 this.flashColor(target.body, 0xff0844);
+                this.playSynthSound('buff');
+            }
+            else if (data.buffType === 'shield') {
+                target.isShielded = true;
+                if (!target.shieldGraphic) {
+                    target.shieldGraphic = this.add.graphics();
+                    target.shieldGraphic.lineStyle(4, 0x00f2fe, 0.8);
+                    target.shieldGraphic.strokeCircle(0, 0, target.body.scale * 24);
+                }
+                this.showDamageText(px, py, "SHIELD ACTIVATED!", '#00f2fe');
+                this.playSynthSound('heal');
+            }
+            else if (data.buffType === 'burn') {
+                target.isBurning = true;
+                if (!target.fireEmitter) {
+                    target.fireEmitter = this.add.particles(0, 0, 'flare_p', {
+                        lifespan: 600, speed: { min: 10, max: 50 },
+                        scale: { start: 1, end: 0 },
+                        blendMode: 'ADD', tint: 0xff4757
+                    });
+                }
+                this.showDamageText(px, py, "BURN!", '#ff4757');
+                this.time.delayedCall(5000, () => {
+                    target.isBurning = false;
+                    if (target.fireEmitter) {
+                        target.fireEmitter.destroy();
+                        target.fireEmitter = undefined;
+                    }
+                });
             }
             this.updateLeaderboard();
         }
@@ -227,6 +335,13 @@ export class MainScene extends Phaser.Scene {
     }
 
     private spawnBall(data: any) {
+        if (this.fighters.length >= 10) {
+            // Loại bỏ quả bóng yếu nhất để nhường chỗ
+            const weakest = [...this.fighters].sort((a, b) => a.hp - b.hp)[0];
+            this.showDamageText(weakest.body.x, weakest.body.y, "REPLACED!", '#a4b0be');
+            this.destroyFighter(weakest);
+        }
+
         const { width, height } = this.scale;
         const startX = Phaser.Math.Between(100, width - 100);
         const startY = Phaser.Math.Between(100, height - 100);
@@ -275,22 +390,39 @@ export class MainScene extends Phaser.Scene {
         ball.setAngularVelocity(Phaser.Math.FloatBetween(-0.2, 0.2)); 
     }
 
+    private destroyFighter(fighter: FighterData) {
+        fighter.body.destroy();
+        fighter.text.destroy();
+        if (fighter.shieldGraphic) fighter.shieldGraphic.destroy();
+        if (fighter.fireEmitter) fighter.fireEmitter.destroy();
+        this.fighters = this.fighters.filter(f => f !== fighter);
+    }
+
     update(_time: number, _delta: number) {
         for (let i = this.fighters.length - 1; i >= 0; i--) {
             const fighter = this.fighters[i];
             
             if (fighter.hp <= 0) {
                 this.showDamageText(fighter.body.x, fighter.body.y, "💀 DEFEATED!", '#a4b0be');
-                fighter.body.destroy();
-                fighter.text.destroy();
-                this.fighters.splice(i, 1);
+                this.destroyFighter(fighter);
                 this.updateLeaderboard();
+                this.playSynthSound('clash');
                 continue;
             }
 
             const scaleOffset = fighter.body.scale * 35;
             fighter.text.setPosition(fighter.body.x, fighter.body.y - scaleOffset);
-            fighter.text.setText(`${fighter.username} (${fighter.hp}❤)`);
+            fighter.text.setText(`${fighter.username} (${Math.floor(fighter.hp)}❤)`);
+
+            if (fighter.isShielded && fighter.shieldGraphic) {
+                fighter.shieldGraphic.setPosition(fighter.body.x, fighter.body.y);
+            }
+            if (fighter.isBurning) {
+                fighter.hp -= 0.1; // Cháy trừ máu từ từ
+                if (fighter.fireEmitter) {
+                    fighter.fireEmitter.setPosition(fighter.body.x, fighter.body.y);
+                }
+            }
 
             const speed = (fighter.body.body as MatterJS.BodyType).speed || 0;
             if (speed < 3) {
@@ -304,5 +436,82 @@ export class MainScene extends Phaser.Scene {
                 fighter.body.setAngularVelocity(Phaser.Math.FloatBetween(-0.1, 0.1));
             }
         }
+    }
+
+    // --- SOUND ENGINE (WEB AUDIO API SYNTH) ---
+    private startBackgroundMusic() {
+        if (!this.audioCtx) return;
+        try {
+            const osc = this.audioCtx.createOscillator();
+            const gainNode = this.audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(45, this.audioCtx.currentTime); // Low bass drone
+            
+            // LFO effect
+            const lfo = this.audioCtx.createOscillator();
+            lfo.frequency.value = 0.5;
+            const lfoGain = this.audioCtx.createGain();
+            lfoGain.gain.value = 5;
+            lfo.connect(lfoGain);
+            lfoGain.connect(osc.frequency);
+
+            gainNode.gain.value = 0.05; // Vol nhỏ, không át tiếng ồn
+            osc.connect(gainNode);
+            gainNode.connect(this.audioCtx.destination);
+            
+            osc.start();
+            lfo.start();
+        } catch (e) {}
+    }
+
+    private playSynthSound(type: 'hit' | 'clash' | 'bounce' | 'heal' | 'buff') {
+        if (!this.audioCtx || this.audioCtx.state === 'suspended') return;
+        
+        try {
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            const now = this.audioCtx.currentTime;
+
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'clash') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'bounce') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.05);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'heal') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554, now + 0.1);
+                osc.frequency.setValueAtTime(659, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'buff') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            }
+        } catch(e) {}
     }
 }

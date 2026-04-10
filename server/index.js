@@ -82,6 +82,7 @@ const connectToTikTok = (username) => {
         else if (giftName.includes('star') || giftName.includes('sao')) { type = 'buff'; buffType = 'speed'; }
         else if (giftName.includes('biceps') || giftName.includes('cơ bắp')) { type = 'buff'; buffType = 'damage'; }
         else if (giftName.includes('fire') || giftName.includes('lửa')) { type = 'buff'; buffType = 'burn'; }
+        else if (giftName.includes('shield') || giftName.includes('khiên')) { type = 'buff'; buffType = 'shield'; }
 
         if (type === 'buff') {
             io.emit('game-buff', { username: data.uniqueId, buffType: buffType });
@@ -107,7 +108,7 @@ if (TIKTOK_USERNAME) {
     connectToTikTok(TIKTOK_USERNAME);
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`🚀 Server đang lắng nghe trên cổng ${PORT}`);
 });

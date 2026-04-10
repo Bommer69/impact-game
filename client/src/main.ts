@@ -12,7 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
         default: 'matter',
         matter: {
             gravity: { x: 0, y: 0 }, // Không trọng lực (Anti-Gravity)
-            debug: true // Hiện viền vật lý hỗ trợ develop
+            debug: false // Ẩn viền vật lý
         }
     },
     scene: [MainScene],

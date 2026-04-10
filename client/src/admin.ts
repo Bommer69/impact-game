@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3000');
+const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+const socket = io(serverUrl);
 const statusTxt = document.getElementById('statusTxt')!;
 
 socket.on('connect', () => {
@@ -38,3 +39,33 @@ document.getElementById('btnDropBoss')!.onclick = () => triggerAdminEvent('spawn
 document.getElementById('btnHeal')!.onclick = () => triggerAdminEvent('buff', { buffType: 'heal' });
 document.getElementById('btnSpeed')!.onclick = () => triggerAdminEvent('buff', { buffType: 'speed' });
 document.getElementById('btnDamage')!.onclick = () => triggerAdminEvent('buff', { buffType: 'damage' });
+document.getElementById('btnShield')!.onclick = () => triggerAdminEvent('buff', { buffType: 'shield' });
+document.getElementById('btnBurn')!.onclick = () => triggerAdminEvent('buff', { buffType: 'burn' });
+
+// --- Cập nhật danh sách người chơi (Live) ---
+const playerListEl = document.getElementById('playerList')!;
+const activePlayers = new Set<string>();
+
+function updatePlayerListUI() {
+    if (activePlayers.size === 0) {
+        playerListEl.innerHTML = '<li class="player-item"><i>Chưa có chiến binh nào...</i></li>';
+        return;
+    }
+    
+    let html = '';
+    activePlayers.forEach(name => {
+        html += `<li class="player-item">🎮 Nhẫn giả: <b>${name}</b></li>`;
+    });
+    playerListEl.innerHTML = html;
+}
+
+socket.on('game-spawn', (data: any) => {
+    activePlayers.add(data.username);
+    updatePlayerListUI();
+});
+
+socket.on('tiktok-chat', (data: any) => {
+    // Cũng có thể hiển thị chat hoặc add active user từ chat
+    activePlayers.add(data.username);
+    updatePlayerListUI();
+});
