@@ -19,6 +19,8 @@ export class MainScene extends Phaser.Scene {
     private fighters: FighterData[] = [];
     private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
     private leaderboardText!: Phaser.GameObjects.Text;
+    private gameStatsText!: Phaser.GameObjects.Text;
+    private gameStats = { totalEvents: 0 };
     private weaponsList = ['wp_sword', 'wp_spear', 'wp_axe', 'wp_bow'];
     
     // Web Audio API Context
@@ -105,6 +107,17 @@ export class MainScene extends Phaser.Scene {
         boardBg.strokeRoundedRect(width - 250, 20, 230, 150, 12);
         this.add.text(width - 240, 30, '🏆 TOP SÁT THỦ', { fontSize: '18px', color: '#f6d365', fontStyle: 'bold' });
         this.leaderboardText = this.add.text(width - 240, 60, '1. Đang cập nhật...\n2. Đang cập nhật...\n3. Đang cập nhật...', {
+            fontSize: '15px', color: '#c9d1d9', lineSpacing: 10
+        });
+
+        // --- BẢNG THỐNG KÊ (GAME STATS HUD) ---
+        const statsBg = this.add.graphics();
+        statsBg.fillStyle(0x161b22, 0.8);
+        statsBg.lineStyle(1, 0x30363d);
+        statsBg.fillRoundedRect(20, 20, 200, 90, 12);
+        statsBg.strokeRoundedRect(20, 20, 200, 90, 12);
+        this.add.text(30, 30, '📊 THỐNG KÊ GAME', { fontSize: '18px', color: '#00f2fe', fontStyle: 'bold' });
+        this.gameStatsText = this.add.text(30, 60, 'Chiến binh: 0/10\nSự kiện thả: 0', {
             fontSize: '15px', color: '#c9d1d9', lineSpacing: 10
         });
 
@@ -250,6 +263,11 @@ export class MainScene extends Phaser.Scene {
         });
         if (topText === '') topText = 'Chưa có chiến binh nào...';
         this.leaderboardText.setText(topText);
+        
+        // Update Game Stats UI
+        if (this.gameStatsText) {
+            this.gameStatsText.setText(`Chiến binh: ${this.fighters.length}/10\nSự kiện thả: ${this.gameStats.totalEvents}`);
+        }
     }
 
     private applyBuff(data: { username: string, buffType: string }) {
@@ -258,6 +276,8 @@ export class MainScene extends Phaser.Scene {
         if (targetList.length === 0 && this.fighters.length > 0) {
             targetList = [...this.fighters].sort((a,b) => a.hp - b.hp); // Cứu kẻ yếu nhất
         }
+
+        this.gameStats.totalEvents++; // Tăng sự kiện
 
         if (targetList.length > 0) {
             const target = targetList[0];
@@ -343,6 +363,9 @@ export class MainScene extends Phaser.Scene {
         }
 
         const { width, height } = this.scale;
+        
+        this.gameStats.totalEvents++; // Tăng sự kiện
+        
         const startX = Phaser.Math.Between(100, width - 100);
         const startY = Phaser.Math.Between(100, height - 100);
 

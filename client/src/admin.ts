@@ -27,8 +27,24 @@ adminConnectBtn.onclick = () => {
     }
 };
 
+// --- Thống Kê Tổng Hợp ---
+let stats = { drops: 0, buffs: 0 };
+const elStatPlayers = document.getElementById('statPlayers')!;
+const elStatDrops = document.getElementById('statDrops')!;
+const elStatBuffs = document.getElementById('statBuffs')!;
+
+function updateStatsUI() {
+    elStatPlayers.innerHTML = activePlayers.size.toString();
+    elStatDrops.innerHTML = stats.drops.toString();
+    elStatBuffs.innerHTML = stats.buffs.toString();
+}
+
 // --- Giả Lập Event ---
 function triggerAdminEvent(type: string, payload: any) {
+    if (type === 'spawn') stats.drops += payload.amount || 1;
+    if (type === 'buff') stats.buffs += 1;
+    updateStatsUI();
+    
     socket.emit('admin-action', { type, ...payload });
 }
 
@@ -57,6 +73,7 @@ function updatePlayerListUI() {
         html += `<li class="player-item">🎮 Nhẫn giả: <b>${name}</b></li>`;
     });
     playerListEl.innerHTML = html;
+    updateStatsUI(); // Cập nhật lại số lượng người chơi
 }
 
 socket.on('game-spawn', (data: any) => {

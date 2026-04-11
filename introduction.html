@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weapon Ball Battle Royale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --text: #c9d1d9;
+            --primary: #00f2fe;
+            --pink: #ff007f;
+            --yellow: #f6d365;
+            --glow-primary: 0 0 20px rgba(0, 242, 254, 0.4);
+            --glow-pink: 0 0 20px rgba(255, 0, 127, 0.4);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            background-image: 
+                linear-gradient(rgba(13, 17, 23, 0.9), rgba(13, 17, 23, 0.9)),
+                repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(0, 242, 254, 0.03) 40px, rgba(0, 242, 254, 0.03) 80px);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 24px;
+            box-shadow: var(--glow-primary);
+            border: 2px solid rgba(0, 242, 254, 0.3);
+            margin-bottom: 30px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin: 0;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--primary), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(255, 0, 127, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8b949e;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        .section {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .section:nth-child(even)::before {
+            background: var(--pink);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: #fff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+        
+        .feature-card h3 {
+            color: var(--yellow);
+            margin-top: 0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--primary);
+            margin: 4px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+        }
+
+        .tag.pink {
+            background: rgba(255, 0, 127, 0.1);
+            color: var(--pink);
+            border-color: rgba(255, 0, 127, 0.2);
+        }
+
+        .tech-stack {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .tech-item {
+            text-align: center;
+        }
+
+        .tech-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #21262d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 2px solid #30363d;
+            font-size: 24px;
+            transition: all 0.3s;
+            cursor: default;
+        }
+
+        .tech-circle:hover {
+            border-color: var(--primary);
+            box-shadow: var(--glow-primary);
+            transform: scale(1.1);
+        }
+
+        ul {
+            line-height: 1.8;
+            color: #8b949e;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--primary), var(--pink));
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 20px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            box-shadow: 0 10px 20px rgba(255, 0, 127, 0.4);
+            transform: scale(1.05);
+        }
+        
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <img class="hero-img" src="file:///C:/Users/OS/.gemini/antigravity/brain/bd99101e-ee54-4955-89ff-e3893940f43d/game_hero_banner_1775827567572.png" alt="Weapon Ball Arena Cover">
+            <h1>Weapon Ball</h1>
+            <div class="subtitle">BATTLE ROYALE • TIKTOK LIVE INTERACTIVE GAME</div>
+            <a href="https://impact-game-m6p2.vercel.app/" target="_blank" class="btn">Chơi Thử Ngay</a>
+        </header>
+
+        <section class="section">
+            <h2>🎯 Trải Nghiệm Tương Tác Đột Phá</h2>
+            <p>Weapon Ball là siêu phẩm game tương tác thời gian thực dành riêng cho nền tảng TikTok Live. Khán giả không chỉ xem mà sẽ trực tiếp thay đổi cục diện trận đấu, tham gia vào phe phái và thả quà để triệu hồi vũ khí, tướng lĩnh sát cánh chiến đấu.</p>
+            <div>
+                <span class="tag">#Interactive</span>
+                <span class="tag pink">#BattleRoyale</span>
+                <span class="tag">#Esports</span>
+                <span class="tag pink">#AutoBattler</span>
+            </div>
+        </section>
+
+        <section class="section" style="text-align: center;">
+            <h2>📈 Thống Kê Nổi Bật</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3 style="font-size: 3rem; margin: 0; color: var(--primary);">1M+</h3>
+                    <p style="font-size: 1.1rem; color: #8b949e; margin-top: 10px;">Lượt Chơi Hàng Tháng</p>
+                </div>
+                <div class="feature-card">
+                    <h3 style="font-size: 3rem; margin: 0; color: var(--pink);">50K+</h3>
+                    <p style="font-size: 1.1rem; color: #8b949e; margin-top: 10px;">Quà Tặng Tương Tác</p>
+                </div>
+                <div class="feature-card">
+                    <h3 style="font-size: 3rem; margin: 0; color: var(--yellow);">500+</h3>
+                    <p style="font-size: 1.1rem; color: #8b949e; margin-top: 10px;">Streamer Tin Dùng</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="features-grid">
+            <section class="section">
+                <h2>⚔️ 23+ Vũ Khí Đa Dạng</h2>
+                <ul>
+                    <li><b>Cận chiến:</b> Sword, Katana, Scythe, Flail...</li>
+                    <li><b>Đánh xa:</b> Bow, Shuriken, Crossbow...</li>
+                    <li><b>Phép thuật:</b> Scepter, Grimoire, Flame Torch...</li>
+                    <li><b>Cơ khí bạo lực:</b> Wrench, Giant Hammer!</li>
+                </ul>
+            </section>
+
+            <section class="section">
+                <h2>🎁 Tương Tác Quà Tặng Đỉnh Cao</h2>
+                <ul>
+                    <li>💖 <b>Tim/Hoa Hồng:</b> Triệu hồi cấp độ Lính</li>
+                    <li>🚀 <b>Tên Lửa:</b> Đổ bộ tướng lĩnh cao cấp</li>
+                    <li>👑 <b>Vương Miện:</b> Gọi Super Boss khổng lồ</li>
+                    <li>💋 <b>Buff:</b> Thả Hồi máu, Giáp, Tốc độ đánh bất kỳ lúc nào</li>
+                </ul>
+            </section>
+        </div>
+
+        <section class="section">
+            <h2>🧬 Mô Phỏng Vật Lý Chân Thực</h2>
+            <p>Sử dụng Engine vật lý 2D nâng cao, tạo ra độ thỏa mãn tuyệt đối (Satisfying) trong từng pha va chạm. Chuyển động quán tính, mô phỏng lực nảy từ tường và tác động văng đi khi chịu sát thương.</p>
+            <div class="features-grid" style="margin-top: 20px;">
+                <div class="feature-card">
+                    <h3>🌀 Anti-Gravity Mode</h3>
+                    <p>Môi trường không trọng lực, bóng nảy xuyên không gian hỗn loạn.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🛑 Arena Shrink</h3>
+                    <p>Vòng bo sinh tồn thu hẹp, ép giao tranh tàn khốc về cuối trận.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="text-align: center;">
+            <h2>⚡ Công Nghệ Tích Hợp (Tech Stack)</h2>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <div class="tech-circle">🚀</div>
+                    <div>Phaser 3 / PixiJS</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-circle">📐</div>
+                    <div>Matter.js</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-circle">🟢</div>
+                    <div>Node.js & TS</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-circle">🔌</div>
+                    <div>Socket.io</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-circle">🎵</div>
+                    <div>TikTok API</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+</body>
+</html>
