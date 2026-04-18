@@ -7,12 +7,17 @@ const config: Phaser.Types.Core.GameConfig = {
     parent: 'app',
     width: window.innerWidth,
     height: window.innerHeight,
-    backgroundColor: '#0d1117',
+    backgroundColor: '#070a12',
     physics: {
         default: 'matter',
         matter: {
-            gravity: { x: 0, y: 0 }, // Không trọng lực (Anti-Gravity)
-            debug: false // Ẩn viền vật lý
+            gravity: { x: 0, y: 0 },
+            debug: false,
+            // Giảm rung / chồng lấn khi va chạm — chuyển động mượt hơn
+            positionIterations: 12,
+            velocityIterations: 10,
+            constraintIterations: 6,
+            enableSleeping: false
         }
     },
     scene: [MainScene],
@@ -22,7 +27,13 @@ const config: Phaser.Types.Core.GameConfig = {
     }
 };
 
-// Các thành phần UI (Trạm điều khiển Admin) đã được di chuyển hoàn toàn sang trang admin.html.
-// Màn hình chính này bây giờ SẠCH tuyệt đối để đưa lên OBS Livestream.
+function boot() {
+    return new Phaser.Game(config);
+}
 
-export default new Phaser.Game(config);
+// Đợi font Google tải xong để chữ HUD trong Phaser khớp typography
+if (document.fonts?.ready) {
+    document.fonts.ready.then(boot).catch(boot);
+} else {
+    boot();
+}
